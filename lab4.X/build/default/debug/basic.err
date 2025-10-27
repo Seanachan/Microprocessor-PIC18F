@@ -1,0 +1,5 @@
+Warning[205] C:\USERS\SEANA\MPLABXPROJECTS\LAB4.X\BASIC.ASM 1 : Found directive in column 1. (List)
+Warning[207] C:\USERS\SEANA\MPLABXPROJECTS\LAB4.X\BASIC.ASM 21 : Found label after column 1. (And_Mul)
+Warning[207] C:\USERS\SEANA\MPLABXPROJECTS\LAB4.X\BASIC.ASM 31 : Found label after column 1. (and)
+Warning[207] C:\USERS\SEANA\MPLABXPROJECTS\LAB4.X\BASIC.ASM 40 : Found label after column 1. (mul)
+Warning[207] C:\USERS\SEANA\MPLABXPROJECTS\LAB4.X\BASIC.ASM 44 : Found label after column 1. (store)
