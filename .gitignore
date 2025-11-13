@@ -23,6 +23,7 @@ CMakeUserPresets.json
 
 # But track .asm files in any folder
 !**/*.asm
+!**/*.c
 
 # And don't ignore directories (needed for tracking files in subdirectories)
 !*/
