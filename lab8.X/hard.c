@@ -1,12 +1,3 @@
-// PIC18F4520 Configuration Bit Settings
-#pragma config OSC = INTIO67
-#pragma config PWRT = OFF
-#pragma config BOREN = ON
-#pragma config WDT = OFF
-#pragma config PBADEN = OFF
-#pragma config LVP = OFF
-#pragma config CPD = OFF
-
 #include <xc.h>
 #include <pic18f4520.h>
 
