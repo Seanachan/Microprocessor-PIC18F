@@ -34,8 +34,8 @@ void __interrupt(high_priority)H_ISR(){
     //step4
     brightness = (ADRESH<<8) | ADRESL;
     
-    CCPR2L = brightness >> 2;
-    CCP2CONbits.DC2B = brightness & 0b11;
+    CCPR2L = brightness >> 2; //upper 8 bits 
+    CCP2CONbits.DC2B = brightness & 0b11; //lower 2 bits of the PWM duty cycle for CCP2
     
     CCPR1L = brightness >> 2;
     CCP1CONbits.DC1B = brightness & 0b11;
