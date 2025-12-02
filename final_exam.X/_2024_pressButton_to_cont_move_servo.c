@@ -11,37 +11,18 @@
 #define SERVO_COUNTS_M90 11 // ~1.0 ms pulse (? -90�)
 #define SERVO_COUNTS_0 41   // ~1.5 ms pulse (center)
 #define SERVO_COUNTS_P90 70 // ~2.0 ms pulse (? +90�)
-// Globals shared with ISR
+
 volatile unsigned char button_event = 0;
 volatile int SERVO_STEP_COUNTS = 7;
+unsigned char deg_array[] = {11, 26, 41, 56, 70};
+unsigned char deg_index = 0;
+unsigned char stride = 1;
+
 unsigned char current_counts = SERVO_COUNTS_M90; // start at -90
 unsigned char target_counts = SERVO_COUNTS_M90;
 signed char direction = +1; // +1 toward +90, -1 toward -90
 unsigned char moving = 0;   // 0 = idle, 1 = moving
-unsigned char deg_conversion(unsigned char deg)
-{
-    switch (deg)
-    {
-    case -90:
-        return SERVO_COUNTS_M90;
-        break;
 
-    case 90:
-        return SERVO_COUNTS_P90;
-        break;
-    case 0:
-        return SERVO_COUNTS_0;
-        break;
-    case 45:
-        return (SERVO_COUNTS_0 + SERVO_COUNTS_P90) / 2;
-        break;
-    case -45:
-        return (SERVO_COUNTS_0 + SERVO_COUNTS_M90) / 2;
-        break;
-    default:
-        break;
-    }
-}
 void PWM1_SetCounts(unsigned char counts)
 {
     // 10-bit duty: (CCPR1L:DC1B) = counts
@@ -149,25 +130,30 @@ void main(void)
             __delay_ms(20);
 
             // Compute new target
-            int tmp = (int)current_counts + (int)direction * SERVO_STEP_COUNTS;
+            // int tmp = (int)current_counts + (int)direction * SERVO_STEP_COUNTS;
+            int next_idx = (int)deg_index + direction * stride;
 
-            if (tmp >= SERVO_COUNTS_P90)
+            if (next_idx > 4)
             {
-                target_counts = SERVO_COUNTS_P90;
-                direction = -1; // reverse for next press
+                // target_counts = SERVO_COUNTS_P90 - (tmp - SERVO_COUNTS_P90); // bounce back
+                // direction = -1;                                              // reverse for next press
+                next_idx = 4 - (next_idx - 4);
+                direction = -1;
             }
-            else if (tmp <= SERVO_COUNTS_M90)
+            else if (next_idx < 0)
             {
-                target_counts = SERVO_COUNTS_M90;
-                direction = +1; // reverse for next press
+                next_idx = 0 + (0 - next_idx);
+                direction = +1;
             }
-            else
-            {
-                target_counts = (unsigned char)tmp;
-            }
+            deg_index = (unsigned char)next_idx;
+            target_counts = deg_array[deg_index];
 
             moving = 1;          // start gradual motion
             LATDbits.LATD7 ^= 1; // debug: toggle LED per press
+
+            stride *= 2;
+            if (stride > 4)
+                stride = 1;
         }
 
         // ----- Gradual motion -----
