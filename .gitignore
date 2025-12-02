@@ -31,3 +31,5 @@ CMakeUserPresets.json
 /lab*.X/build/
 /lab*.X/dist/
 /lab*.X/nbproject/
+/final_exam.X/build/
+/final_exam.X/dist/

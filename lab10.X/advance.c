@@ -97,11 +97,11 @@ void __interrupt(high_priority) Hi_ISR(void)
             LATD ^= 0xFF; // toggle RD0 every 1 ms
         }
     }
-    if (PIR1bits.RCIF)
-    {
-        char c = RCREG;
-        UART_Write(c); // echo
-    }
+//    if (PIR1bits.RCIF)
+//    {
+//        char c = RCREG;
+//        UART_Write(c); // echo
+//    }
 
     if (INTCONbits.INT0IF) // Check INT0 interrupt flag
     {

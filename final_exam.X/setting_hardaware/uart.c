@@ -1,9 +1,10 @@
 #include <xc.h>
+#include <string.h>
 // setting TX/RX
 
 char mystring[20];
 int lenStr = 0;
-int line_ready = 0;
+int line_ready;
 
 void UART_Initialize()
 {
@@ -68,6 +69,9 @@ void MyusartRead()
     // If user presses Enter, finish the string
     if (received == '\r' || received == '\n')
     {
+        if (lenStr == 0)
+            return; // ignore if no data
+
         mystring[lenStr] = '\0'; // terminate C-string
         UART_Write('\r');
         UART_Write('\n');
@@ -101,6 +105,10 @@ void __interrupt(low_priority) Lo_ISR(void)
         }
 
         MyusartRead();
+        if (line_ready && strstr(mystring, "m1"))
+        {
+            return; // Return to Main
+        }
     }
 
     // process other interrupt sources here, if required
@@ -111,4 +119,8 @@ void wait_for_line()
 {
     while (!line_ready)
         ;
+}
+int get_line_ready()
+{
+                                                                                                                                        return line_ready;
 }
