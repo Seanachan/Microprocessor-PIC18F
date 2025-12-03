@@ -70,11 +70,12 @@ int buffer_size = 0;
 bool btn_interr = false;
 // t0_blink_half_ticks = 4 -> full period 1.0 s | 2 -> 0.25 s | 1 -> 0.125 s
 // t1_blink_half_ticks = 10 -> full period 1.0 s | 2 -> 0.25 s | 1 -> 0.125 s
-unsigned char t0_blink_half_ticks = 4;
-unsigned char t0_tick = 0;
-unsigned char t1_blink_half_ticks = 4;
-unsigned char t1_tick = 0;
-
+unsigned int t0_blink_half_ticks = 4;
+unsigned int t0_tick = 0;
+unsigned int t1_blink_half_ticks = 10;
+unsigned int t1_tick = 0;
+unsigned int t3_blink_half_ticks = 10;
+unsigned int t3_tick = 0;
 // My Variables
 
 // ----- State machine for 3-LED pattern -----
@@ -361,7 +362,6 @@ int set_servo_angle(int angle)
 }
 
 // Variable resistor
-
 int VR_value_to_servo_angle(int value, int min_deg, int max_deg)
 {
     int vr = value;
@@ -373,7 +373,7 @@ int VR_value_to_servo_angle(int value, int min_deg, int max_deg)
     long span = (long)(max_deg - min_deg);          // total angle range
     long angle = (span * vr + VR_MAX / 2) / VR_MAX; // scaled, with rounding
 
-    // return (int)(((double)value / VR_MAX * 180) - 90);
+    // Original - Map to -90~90: return (int)(((double)value / VR_MAX * 180) - 90);
     return (int)(min_deg + angle);
 }
 int VR_value_to_L

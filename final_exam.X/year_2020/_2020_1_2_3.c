@@ -68,13 +68,14 @@
 char buffer[STR_MAX];
 int buffer_size = 0;
 bool btn_interr = false;
-// t0_blink_half_ticks = 4 -> full period 1.0 s
-// t0_blink_half_ticks = 2 -> 0.25 s
-// t0_blink_half_ticks = 1 -> 0.125 s
-unsigned char t0_blink_half_ticks = 4;
-unsigned char t0_tick = 0;
-unsigned char t1_blink_half_ticks = 4;
-unsigned char t1_tick = 0;
+// t0_blink_half_ticks = 4 -> full period 1.0 s | 2 -> 0.25 s | 1 -> 0.125 s
+// t1_blink_half_ticks = 10 -> full period 1.0 s | 2 -> 0.25 s | 1 -> 0.125 s
+unsigned int t0_blink_half_ticks = 4;
+unsigned int t0_tick = 0;
+unsigned int t1_blink_half_ticks = 10;
+unsigned int t1_tick = 0;
+unsigned int t3_blink_half_ticks = 10;
+unsigned int t3_tick = 0;
 
 // My Variable
 int mode = 1;
