@@ -242,7 +242,7 @@ void Initialize(void)
     // Start ADC conversion
     ADCON0bits.GO = 1;
 
-    // --------- Timer0: ~125 ms tick ---------
+    // --------- Timer0: 125 ms tick ---------
     T0CONbits.T08BIT = 0;   // 16-bit timer
     T0CONbits.T0CS = 0;     // clock source = internal instruction clock (Fosc/4)
     T0CONbits.T0SE = 0;     // increment on low-to-high (don't care for internal)
@@ -250,25 +250,26 @@ void Initialize(void)
     T0CONbits.T0PS = 0b111; // prescaler 1:256
     T0CONbits.TMR0ON = 0;   // stop Timer0
     // Fosc = 4 MHz → Fcy = 1 MHz → Timer0 tick = 1 µs * 256 = 256 µs
-    // We want about 125 ms between overflows:
+    // N = 65536-65047 = 489 counts
+    //   125 ms / 256 µs ≈ 488 counts
     //   N = 125 ms / 256 µs ≈ 488 counts
     //   preload = 65536 - 488 = 65048 = 0xFE68
     TMR0H = 0xFE;
-    TMR0L = 0x68;
+    TMR0L = 0x17;
 
     INTCONbits.TMR0IF = 0;
     INTCONbits.TMR0IE = 1;  // enable Timer0 interrupt
     INTCON2bits.TMR0IP = 1; // high priority
 
-    // -------- Timer1: ~0.25 s tick --------
+    // -------- Timer1: 10 ms tick --------
     T1CONbits.TMR1CS = 0;    // clock source = Fosc/4 (1 MHz at 4 MHz Fosc)
     T1CONbits.T1CKPS = 0b11; // prescaler 1:8 -> tick = 8 µs
     T1CONbits.RD16 = 1;      // 16-bit read/write
 
-    // 0.25 s / 8 µs = 31250 counts
-    // preload = 65536 - 31250 = 34286 = 0x85EE
-    TMR1H = 0x85;
-    TMR1L = 0xEE;
+    // 0.01 s / 8 µs = 1250 counts
+    // preload = 65536 - 1250 = 64286 = 0xFB1E
+    TMR1H = 0xFB;
+    TMR1L = 0x1E;
 
     PIR1bits.TMR1IF = 0;
     PIE1bits.TMR1IE = 1;  // enable Timer1 interrupt

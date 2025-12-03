@@ -254,11 +254,12 @@ void Initialize(void)
   T0CONbits.T0PS = 0b111; // prescaler 1:256
 
   // Fosc = 4 MHz → Fcy = 1 MHz → Timer0 tick = 1 µs * 256 = 256 µs
-  // We want about 125 ms between overflows:
+  // N = 65536-65047 = 489 counts
+  //   125 ms / 256 µs ≈ 488 counts
   //   N = 125 ms / 256 µs ≈ 488 counts
   //   preload = 65536 - 488 = 65048 = 0xFE68
   TMR0H = 0xFE;
-  TMR0L = 0x68;
+  TMR0L = 0x17;
 
   INTCONbits.TMR0IF = 0;
   INTCONbits.TMR0IE = 1;  // enable Timer0 interrupt
@@ -270,10 +271,10 @@ void Initialize(void)
   T1CONbits.T1CKPS = 0b11; // prescaler 1:8 -> tick = 8 µs
   T1CONbits.RD16 = 1;      // 16-bit read/write
 
-  // 0.25 s / 8 µs = 31250 counts
-  // preload = 65536 - 31250 = 34286 = 0x85EE
-  TMR1H = 0x85;
-  TMR1L = 0xEE;
+  // 0.01 s / 8 µs = 1250 counts
+  // preload = 65536 - 1250 = 64286 = 0xFB1E
+  TMR1H = 0xFB;
+  TMR1L = 0x1E;
 
   PIR1bits.TMR1IF = 0;
   PIE1bits.TMR1IE = 1;  // enable Timer1 interrupt
@@ -454,7 +455,7 @@ void variable_register_changed(int value)
   {
     unsigned int new_step = 50 + (((long)value * (250 - 50)) / VR_MAX);
     // printf("value: %d\n", value);
-    if (new_step != abs(brighness_step))
+    if (new_step - abs(brighness_step) > 5)
     {
       if (brighness_step < 0)
         brighness_step = -new_step;
