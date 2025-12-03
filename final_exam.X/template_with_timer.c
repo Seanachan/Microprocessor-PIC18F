@@ -68,9 +68,8 @@
 char buffer[STR_MAX];
 int buffer_size = 0;
 bool btn_interr = false;
-// t0_blink_half_ticks = 4 → full period 1.0 s
-// t0_blink_half_ticks = 2 → 0.5 s
-// t0_blink_half_ticks = 1 → 0.25 s
+// t0_blink_half_ticks = 4 -> full period 1.0 s | 2 -> 0.25 s | 1 -> 0.125 s
+// t1_blink_half_ticks = 10 -> full period 1.0 s | 2 -> 0.25 s | 1 -> 0.125 s
 unsigned char t0_blink_half_ticks = 4;
 unsigned char t0_tick = 0;
 unsigned char t1_blink_half_ticks = 4;
@@ -255,7 +254,7 @@ void Initialize(void)
     //   N = 125 ms / 256 µs ≈ 488 counts
     //   preload = 65536 - 488 = 65048 = 0xFE68
     TMR0H = 0xFE;
-    TMR0L = 0x17;
+    TMR0L = 0x68;
 
     INTCONbits.TMR0IF = 0;
     INTCONbits.TMR0IE = 1;  // enable Timer0 interrupt
@@ -266,14 +265,28 @@ void Initialize(void)
     T1CONbits.T1CKPS = 0b11; // prescaler 1:8 -> tick = 8 µs
     T1CONbits.RD16 = 1;      // 16-bit read/write
 
-    // 0.01 s / 8 µs = 1250 counts
-    // preload = 65536 - 1250 = 64286 = 0xFB1E
-    TMR1H = 0xFB;
-    TMR1L = 0x1E;
+    // 0.1 s / 8 µs = 12500 counts
+    // preload = 65536 - 12500 = 53036 = 0xCF2C
+    TMR1H = 0xCF;
+    TMR1L = 0x2C;
 
     PIR1bits.TMR1IF = 0;
     PIE1bits.TMR1IE = 1;  // enable Timer1 interrupt
     T1CONbits.TMR1ON = 0; // stop Timer1
+
+    // -------- Timer3: 10 ms tick --------
+    T1CONbits.TMR3CS = 0;    // clock source = Fosc/4 (1 MHz at 4 MHz Fosc)
+    T1CONbits.T3CKPS = 0b11; // prescaler 1:8 -> tick = 8 µs
+    T1CONbits.RD16 = 1;      // 16-bit read/write
+
+    // 0.1 s / 8 µs = 12500 counts
+    // preload = 65536 - 12500 = 53036 = 0xCF2C
+    TMR3H = 0xCF;
+    TMR3L = 0x2C;
+
+    PIR1bits.TMR3IF = 0;
+    PIE1bits.TMR3IE = 1;  // enable Timer3 interrupt
+    T3CONbits.TMR3ON = 0; // stop Timer3
 }
 
 // ---------------- OOP --------------------
@@ -311,6 +324,11 @@ void timer1_on_off(unsigned char on_off)
     T1CONbits.TMR1ON = on_off; // start Timer1
 }
 
+void timer3_on_off(unsigned char on_off)
+{
+    // Timer 3 Start
+    T3CONbits.TMR3ON = on_off; // start Timer3
+}
 // Servo functions
 int current_servo_angle = 0;
 int get_servo_angle()
@@ -370,6 +388,7 @@ void variable_register_changed(int value);
 void button_pressed();
 void timer0_time_out();
 void timer1_time_out();
+void timer3_time_out();
 
 void __interrupt(high_priority) H_ISR()
 {
@@ -418,6 +437,22 @@ void __interrupt(high_priority) H_ISR()
         {
             t1_tick = 0;
             timer1_time_out();
+        }
+    }
+    if (PIR1bits.TMR3IF)
+    { // Handle Timer3 overflow interrupt
+        // Clear Timer3 interrupt flag
+        PIR1bits.TMR3IF = 0;
+        // Reload Timer0 for next overflow
+        // Approx 0.1 s
+        TMR3H = 0xCF;
+        TMR3L = 0x2C;
+
+        t3_tick++;
+        if (t3_tick >= t3_blink_half_ticks)
+        {
+            t3_tick = 0;
+            timer3_time_out();
         }
     }
 }
@@ -472,6 +507,11 @@ void timer0_time_out()
 void timer1_time_out()
 {
     // Do something when timer1 overflows
+}
+
+void timer3_time_out()
+{
+    // Do something when timer3 overflows
 }
 
 void main()

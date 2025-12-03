@@ -68,9 +68,9 @@
 char buffer[STR_MAX];
 int buffer_size = 0;
 bool btn_interr = false;
-// t0_blink_half_ticks = 4 → full period 1.0 s
-// t0_blink_half_ticks = 2 → 0.5 s
-// t0_blink_half_ticks = 1 → 0.25 s
+// t0_blink_half_ticks = 4 -> full period 1.0 s
+// t0_blink_half_ticks = 2 -> 0.25 s
+// t0_blink_half_ticks = 1 -> 0.125 s
 unsigned char t0_blink_half_ticks = 4;
 unsigned char t0_tick = 0;
 unsigned char t1_blink_half_ticks = 4;
@@ -259,22 +259,22 @@ void Initialize(void)
   //   N = 125 ms / 256 µs ≈ 488 counts
   //   preload = 65536 - 488 = 65048 = 0xFE68
   TMR0H = 0xFE;
-  TMR0L = 0x17;
+  TMR0L = 0x68;
 
   INTCONbits.TMR0IF = 0;
   INTCONbits.TMR0IE = 1;  // enable Timer0 interrupt
   INTCON2bits.TMR0IP = 1; // high priority
   T0CONbits.TMR0ON = 0;   // stop Timer0
 
-  // -------- Timer1: ~0.25 s tick --------
+  // -------- Timer1: ~0.1 s tick --------
   T1CONbits.TMR1CS = 0;    // clock source = Fosc/4 (1 MHz at 4 MHz Fosc)
   T1CONbits.T1CKPS = 0b11; // prescaler 1:8 -> tick = 8 µs
   T1CONbits.RD16 = 1;      // 16-bit read/write
 
-  // 0.01 s / 8 µs = 1250 counts
-  // preload = 65536 - 1250 = 64286 = 0xFB1E
-  TMR1H = 0xFB;
-  TMR1L = 0x1E;
+  // 0.1 s / 8 µs = 12500 counts
+  // preload = 65536 - 12500 = 53036 = 0xCF2C
+  TMR1H = 0xCF;
+  TMR1L = 0x2C;
 
   PIR1bits.TMR1IF = 0;
   PIE1bits.TMR1IE = 1;  // enable Timer1 interrupt
