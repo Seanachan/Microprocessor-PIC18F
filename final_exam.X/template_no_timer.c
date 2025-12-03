@@ -173,10 +173,10 @@ void Initialize(void)
     TRISCbits.TRISC1 = 0;       // RC1 as output (LED)
 
     // Configure I/O ports
-    TRISA &= 0xF1; // Set RA1-RA3 as outputs for LED
+    TRISA &= 0xC1; // Set RA1-RA5 as outputs for LED
     TRISB = 1;     // RB0 as input for button
     TRISC = 0;     // PORTC as output for servo
-    LATA &= 0xF1;  // Clear RA1-RA3
+    LATA &= 0xC1;  // Clear RA1-RA5
     LATC = 0;      // Clear PORTC
 
     // Configure interrupts
@@ -246,9 +246,9 @@ void set_LED(int value)
     LATA = (value << 1);
 }
 
-void set_LED_separately(int a, int b, int c)
+void set_LED_separately(int a, int b, int c, int d, int e)
 {
-    LATA = (a << 3) + (b << 2) + (c << 1);
+    LATA = (a << 5) + (b << 4) + (c << 3) + (d << 2) + (e << 1);
 }
 
 void set_LED_analog(int value)

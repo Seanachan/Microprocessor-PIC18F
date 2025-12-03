@@ -68,11 +68,17 @@
 char buffer[STR_MAX];
 int buffer_size = 0;
 bool btn_interr = false;
-// blink_half_ticks = 4 → full period 1.0 s
-// blink_half_ticks = 2 → 0.5 s
-// blink_half_ticks = 1 → 0.25 s
-unsigned char blink_half_ticks = 4;
+// t0_blink_half_ticks = 4 ? full period 1.0 s
+// t0_blink_half_ticks = 2 ? 0.5 s
+// t0_blink_half_ticks = 1 ? 0.25 s
+unsigned char t0_blink_half_ticks = 4;
 unsigned char t0_tick = 0;
+unsigned char t1_blink_half_ticks = 4;
+unsigned char t1_tick = 0;
+
+// My Variables
+int timer1_count = 0;
+int btn_state = 0;
 
 // ----- State machine for 3-LED pattern -----
 void set_LED(int value);
@@ -245,9 +251,9 @@ void Initialize(void)
     T0CONbits.PSA = 0;      // use prescaler
     T0CONbits.T0PS = 0b111; // prescaler 1:256
 
-    // Fosc = 4 MHz → Fcy = 1 MHz → Timer0 tick = 1 µs * 256 = 256 µs
+    // Fosc = 4 MHz ? Fcy = 1 MHz ? Timer0 tick = 1 �s * 256 = 256 �s
     // We want about 125 ms between overflows:
-    //   N = 125 ms / 256 µs ≈ 488 counts
+    //   N = 125 ms / 256 �s ? 488 counts
     //   preload = 65536 - 488 = 65048 = 0xFE68
     TMR0H = 0xFE;
     TMR0L = 0x68;
@@ -256,8 +262,18 @@ void Initialize(void)
     INTCONbits.TMR0IE = 1;  // enable Timer0 interrupt
     INTCON2bits.TMR0IP = 1; // high priority
 
-    // Timer 0 Start
-    T0CONbits.TMR0ON = 1; // start Timer0
+    // -------- Timer1: ~0.25 s tick --------
+    T1CONbits.TMR1CS = 0;    // clock source = Fosc/4 (1 MHz at 4 MHz Fosc)
+    T1CONbits.T1CKPS = 0b11; // prescaler 1:8 -> tick = 8 �s
+    T1CONbits.RD16 = 1;      // 16-bit read/write
+
+    // 0.25 s / 8 �s = 31250 counts
+    // preload = 65536 - 31250 = 34286 = 0x85EE
+    TMR1H = 0x85;
+    TMR1L = 0xEE;
+
+    PIR1bits.TMR1IF = 0;
+    PIE1bits.TMR1IE = 1; // enable Timer1 interrupt
 }
 
 // ---------------- OOP --------------------
@@ -272,9 +288,9 @@ void set_LED(int value)
     LATA = (value << 1);
 }
 
-void set_LED_separately(int a, int b, int c)
+void set_LED_separately(int a, int b, int c, int d)
 {
-    LATA = (a << 3) + (b << 2) + (c << 1);
+    LATA = (a << 4) + (b << 3) + (c << 2) + (d << 1);
 }
 
 void set_LED_analog(int value)
@@ -283,6 +299,19 @@ void set_LED_analog(int value)
     CCP2CONbits.DC2B = (value & 0b11);
 }
 
+// Timer on/off functions
+void timer0_on_off(unsigned char on_off)
+{
+    // Timer 0 Start
+    T0CONbits.TMR0ON = on_off; // start Timer0
+}
+void timer1_on_off(unsigned char on_off)
+{
+    // Timer 1 Start
+    T1CONbits.TMR1ON = on_off; // start Timer1
+}
+
+// Servo functions
 int current_servo_angle = 0;
 int get_servo_angle()
 {
@@ -313,6 +342,7 @@ int set_servo_angle(int angle)
     return 0;
 }
 
+// Variable resistor
 int VR_value_to_servo_angle(int value)
 {
     return (int)(((double)value / VR_MAX * 180) - 90);
@@ -326,6 +356,8 @@ int VR_value_to_LED_analog(int value)
 void variable_register_changed(int value);
 void button_pressed();
 void timer0_time_out();
+void timer1_time_out();
+
 void __interrupt(high_priority) H_ISR()
 {
     if (PIR1bits.ADIF)
@@ -348,18 +380,32 @@ void __interrupt(high_priority) H_ISR()
         // Clear Timer0 interrupt flag
         INTCONbits.TMR0IF = 0;
         // Reload Timer0 for next overflow
+        // approx 0.25 s
         TMR0H = 0xFC;
         TMR0L = 0x2F;
 
         t0_tick++;
-        if (t0_tick >= blink_half_ticks)
+        if (t0_tick >= t0_blink_half_ticks)
         {
             t0_tick = 0;
-            // Toggle the single LED on RA1
             timer0_time_out();
         }
+    }
+    if (PIR1bits.TMR1IF)
+    { // Handle Timer1 overflow interrupt
+        // Clear Timer1 interrupt flag
+        PIR1bits.TMR1IF = 0;
+        // Reload Timer0 for next overflow
+        // Approx 0.1 s
+        TMR1H = 0xCF;
+        TMR1L = 0x2C;
 
-        INTCONbits.TMR0IF = 0;
+        t1_tick++;
+        if (t1_tick >= t1_blink_half_ticks)
+        {
+            t1_tick = 0;
+            timer1_time_out();
+        }
     }
 }
 
@@ -383,6 +429,21 @@ void button_pressed()
     /* Example:
      * set_LED(get_LED() + 1);
      */
+    if (btn_state == 0)
+    {
+        timer1_on_off(1); // start Timer1
+        btn_state = 1;
+        set_LED_separately(1, 0, 0); // indicate Timer1 is running
+    }
+    else
+    {
+        btn_state = 0;
+        set_LED_separately(0, 0, 0); // indicate Timer1 is stopped
+        printf("\n");
+        timer1_count = 0;
+        printf("Timer: %.2d\n", timer1_count);
+        timer1_on_off(0); // stop Timer1
+    }
 }
 
 void variable_register_changed(int value)
@@ -410,6 +471,12 @@ void timer0_time_out()
 {
     // Do something when timer0 overflows
 }
+void timer1_time_out()
+{
+    // Do something when timer1 overflows
+    timer1_count++;
+    printf("Timer: %.2d\n", timer1_count);
+}
 
 void main()
 {
@@ -433,7 +500,8 @@ void main()
      */
 
     char str[STR_MAX];
-
+    printf("Timer: 00\n");
+    t1_blink_half_ticks = 10; // 1 s
     while (1)
     {
         // Do sth in main
