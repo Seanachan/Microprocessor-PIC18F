@@ -389,7 +389,7 @@ void __interrupt(high_priority) H_ISR()
             timer0_time_out();
         }
     }
-    if (INTCONbits.TMR1IF)
+    if (PIR1bits.TMR1IF)
     { // Handle Timer1 overflow interrupt
         // Clear Timer1 interrupt flag
         PIR1bits.TMR1IF = 0;
@@ -442,13 +442,6 @@ void variable_register_changed(int value)
 void keyboard_input(char *str)
 { // get line from keyboard: this function will be called after you click enter
   // Do sth when typing on keyboard
-    /* Example:
-        if(strcmp(str, "mode1") == 0) {
-            mode = 1;
-        } else if(strcmp(str, "mode2") == 0) {
-            mode = 2;
-        }
-     */
 }
 void timer0_time_out()
 {

@@ -69,6 +69,8 @@ char buffer[STR_MAX];
 int buffer_size = 0;
 bool btn_interr = false;
 
+// add mode variable
+unsigned char mode = 1;
 // ----- State machine for 3-LED pattern -----
 void set_LED(int value);
 
