@@ -1,4 +1,4 @@
-.## 2024
+## 2024
 
 ### Question 1a
 
@@ -6,7 +6,7 @@
 
 Use 3 LEDs lighting sequentially. Push button to change time interval speed.
 
-<img src="img/_2024_1a.png" alt="smiley" height="600px" width="400px">
+<img src="img/_2024_1a.png"  height="600px" width="400px">
 
 ```
 Altering Sequence
@@ -174,4 +174,3 @@ Use variable resistor to adjust the period of breathing LED. (0.5s to 2s).
 4. When counting to 0, servo motor will be +90 deg.
 
 > like an old clock.
-

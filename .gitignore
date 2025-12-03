@@ -28,6 +28,7 @@ CMakeUserPresets.json
 # And don't ignore directories (needed for tracking files in subdirectories)
 !*/
 !*.md
+!*/img/*
 /lab*.X/build/
 /lab*.X/dist/
 /lab*.X/nbproject/
