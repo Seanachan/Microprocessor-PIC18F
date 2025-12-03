@@ -292,17 +292,15 @@ int set_servo_angle(int angle)
 int VR_value_to_servo_angle(int value, int min_deg, int max_deg)
 {
     int vr = value;
-    {
-        if (vr < 0)
-            vr = 0;
-        else if (vr > VR_MAX)
-            vr = VR_MAX; // VR_MAX = 1023
+    if (vr < 0)
+        vr = 0;
+    else if (vr > VR_MAX)
+        vr = VR_MAX; // VR_MAX = 1023
 
-        long span = (long)(max_deg - min_deg);          // total angle range
-        long angle = (span * vr + VR_MAX / 2) / VR_MAX; // scaled, with rounding
+    long span = (long)(max_deg - min_deg);          // total angle range
+    long angle = (span * vr + VR_MAX / 2) / VR_MAX; // scaled, with rounding
 
-        return (int)(min_deg + angle);
-    }
+    return (int)(min_deg + angle);
 }
 int VR_value_to_LED_analog(int value)
 {

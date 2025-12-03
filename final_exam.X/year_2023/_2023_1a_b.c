@@ -51,7 +51,7 @@
 #pragma config EBTR3 = OFF // Table Read Protection bit (Block 3 (006000-007FFFh) not protected from table reads executed in other blocks)
 
 // CONFIG7H
-#pragma config EBTRB = OFF // Boot Block Table Read Protection bit (Boot block (000000-0007FFh) not protected from table reads executed in other blocks)
+#pragma config EBTRB = OFF // Boot Block Table Read rotection bit (Boot block (000000-0007FFh) not protected from table reads executed in other blocks)
 
 #include <ctype.h>
 // #include <pic18f4520.h>

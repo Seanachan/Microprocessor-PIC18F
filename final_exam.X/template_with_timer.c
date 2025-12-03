@@ -248,7 +248,7 @@ void Initialize(void)
     T0CONbits.T0SE = 0;     // increment on low-to-high (don't care for internal)
     T0CONbits.PSA = 0;      // use prescaler
     T0CONbits.T0PS = 0b111; // prescaler 1:256
-
+    T0CONbits.TMR0ON = 0;   // stop Timer0
     // Fosc = 4 MHz → Fcy = 1 MHz → Timer0 tick = 1 µs * 256 = 256 µs
     // We want about 125 ms between overflows:
     //   N = 125 ms / 256 µs ≈ 488 counts
@@ -271,7 +271,8 @@ void Initialize(void)
     TMR1L = 0xEE;
 
     PIR1bits.TMR1IF = 0;
-    PIE1bits.TMR1IE = 1; // enable Timer1 interrupt
+    PIE1bits.TMR1IE = 1;  // enable Timer1 interrupt
+    T1CONbits.TMR1ON = 0; // stop Timer1
 }
 
 // ---------------- OOP --------------------
@@ -341,12 +342,25 @@ int set_servo_angle(int angle)
 }
 
 // Variable resistor
-int VR_value_to_servo_angle(int value)
-{
-    return (int)(((double)value / VR_MAX * 180) - 90);
-}
 
-int VR_value_to_LED_analog(int value)
+int VR_value_to_servo_angle(int value, int min_deg, int max_deg)
+{
+    int vr = value;
+    if (vr < 0)
+        vr = 0;
+    else if (vr > VR_MAX)
+        vr = VR_MAX; // VR_MAX = 1023
+
+    long span = (long)(max_deg - min_deg);          // total angle range
+    long angle = (span * vr + VR_MAX / 2) / VR_MAX; // scaled, with rounding
+
+    // return (int)(((double)value / VR_MAX * 180) - 90);
+    return (int)(min_deg + angle);
+}
+int VR_value_to_L
+
+    int
+    VR_value_to_LED_analog(int value)
 {
     return value;
 }
@@ -442,6 +456,13 @@ void variable_register_changed(int value)
 void keyboard_input(char *str)
 { // get line from keyboard: this function will be called after you click enter
   // Do sth when typing on keyboard
+    /* Example:
+        if(strcmp(str, "mode1") == 0) {
+            mode = 1;
+        } else if(strcmp(str, "mode2") == 0) {
+            mode = 2;
+        }
+     */
 }
 void timer0_time_out()
 {
